@@ -55,12 +55,12 @@ public final class H264Extractor implements Extractor {
     private boolean startedPacket;
 
     private long firstSampleTimestampUs;
-    private static long sampleTime = 10000;
+    private static long sampleTime = 30000;
 
     /** Creates a new extractor for AC-3 bitstreams. */
     public H264Extractor() {
         reader = new ExtendH264Reader( false, true);
-        sampleData = new ParsableByteArray(MAX_SYNC_FRAME_SIZE);
+        sampleData = new ParsableByteArray(MAX_SYNC_FRAME_SIZE * 3);
     }
 
     // Extractor implementation.
@@ -101,11 +101,14 @@ public final class H264Extractor implements Extractor {
 
         if (!startedPacket) {
             // Pass data to the reader as though it's contained within a single infinitely long packet.
+            firstSampleTimestampUs = 0;
             reader.packetStarted (/* pesTimeUs= */ firstSampleTimestampUs, FLAG_DATA_ALIGNMENT_INDICATOR);
             startedPacket = true;
         }
-        firstSampleTimestampUs+=sampleTime;
-        reader.packetStarted(firstSampleTimestampUs, FLAG_DATA_ALIGNMENT_INDICATOR);
+        else {
+            firstSampleTimestampUs += sampleTime;
+            reader.packetStarted(firstSampleTimestampUs, FLAG_DATA_ALIGNMENT_INDICATOR);
+        }
         // TODO: Make it possible for the reader to consume the dataSource directly, so that it becomes
         // unnecessary to copy the data through packetBuffer.
         reader.consume(sampleData);

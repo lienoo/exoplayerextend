@@ -2,9 +2,11 @@ package cn.lienoo.exoplayerextend;
 
 import android.app.Activity;
 import android.content.Intent;
+import android.content.res.AssetManager;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Surface;
 import android.view.SurfaceControl;
 import android.view.SurfaceHolder;
@@ -12,6 +14,7 @@ import android.view.SurfaceView;
 import android.view.View;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.Toast;
 
 import androidx.annotation.Nullable;
 
@@ -26,17 +29,18 @@ import com.google.android.exoplayer2.source.MediaSource;
 import com.google.android.exoplayer2.source.ProgressiveMediaSource;
 import com.google.android.exoplayer2.ui.PlayerControlView;
 import com.google.android.exoplayer2.upstream.DataSource;
+import com.google.android.exoplayer2.upstream.DefaultDataSource;
 import com.google.android.exoplayer2.upstream.DefaultHttpDataSource;
 import com.google.android.exoplayer2.util.Assertions;
 import com.google.android.exoplayer2.util.Util;
 
+import java.io.IOException;
 import java.util.UUID;
 
 /** Activity that demonstrates use of {@link SurfaceControl} with ExoPlayer. */
 public final class MainActivity extends Activity {
 
-    private static final String DEFAULT_MEDIA_URI =
-            "smb://smb:smb123@192.168.1.232/Videos/record.h264";
+    private static final String DEFAULT_MEDIA_URI = "smb://smb:smb123@192.168.1.232/Videos/record.h264";
     private static final String SURFACE_CONTROL_NAME = "surfacedemo";
 
     private static final String ACTION_VIEW = "com.google.android.exoplayer.surfacedemo.action.VIEW";
@@ -167,10 +171,21 @@ public final class MainActivity extends Activity {
     private void initializePlayer() {
         Intent intent = getIntent();
         String action = intent.getAction();
+        AssetManager assetManager = getAssets();
+        String assetUri = null;
+        try {
+            for (String asset : assetManager.list("")) {
+                if (asset.endsWith(".h264"))
+                    assetUri = "asset:///" + asset;
+            }
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
         Uri uri =
                 ACTION_VIEW.equals(action)
                         ? Assertions.checkNotNull(intent.getData())
-                        : Uri.parse(DEFAULT_MEDIA_URI);
+                        : Uri.parse(assetUri);
         DrmSessionManager drmSessionManager;
         if (intent.hasExtra(DRM_SCHEME_EXTRA)) {
             String drmScheme = Assertions.checkNotNull(intent.getStringExtra(DRM_SCHEME_EXTRA));
@@ -209,8 +224,8 @@ public final class MainActivity extends Activity {
 //            throw new IllegalStateException();
 //        }
 
-        DataSource.Factory dataSourceFactory = new SmbDataSourceFactory(DEFAULT_MEDIA_URI);
-        H264Extractor extractor = new H264Extractor();
+//        DataSource.Factory dataSourceFactory = new SmbDataSourceFactory(DEFAULT_MEDIA_URI);
+        DataSource.Factory dataSourceFactory = new DefaultDataSource.Factory(this);
         MediaSource mediaSource =
                 new ProgressiveMediaSource.Factory(dataSourceFactory, new ExtendExtractorsFactory())
                         .setDrmSessionManagerProvider(unusedMediaItem -> drmSessionManager)
