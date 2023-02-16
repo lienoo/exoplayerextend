@@ -42,6 +42,7 @@ dependencies {
 //    implementation 'de.psdev.slf4j-android-logger:slf4j-android-logger:1.0.5'
 
     compileOnly 'org.checkerframework:checker-qual:3.13.0'
+    compileOnly 'com.google.errorprone:error_prone_annotations:2.10.0'
 
     implementation 'androidx.appcompat:appcompat:1.6.1'
     implementation 'com.google.android.material:material:1.8.0'

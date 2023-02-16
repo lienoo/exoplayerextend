@@ -210,8 +210,9 @@ public final class MainActivity extends Activity {
 //        }
 
         DataSource.Factory dataSourceFactory = new SmbDataSourceFactory(DEFAULT_MEDIA_URI);
+        H264Extractor extractor = new H264Extractor();
         MediaSource mediaSource =
-                new ProgressiveMediaSource.Factory(dataSourceFactory)
+                new ProgressiveMediaSource.Factory(dataSourceFactory, new ExtendExtractorsFactory())
                         .setDrmSessionManagerProvider(unusedMediaItem -> drmSessionManager)
                         .createMediaSource(MediaItem.fromUri(uri));
 

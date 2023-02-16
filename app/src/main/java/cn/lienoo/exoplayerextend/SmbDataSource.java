@@ -76,21 +76,14 @@ public final class SmbDataSource extends BaseDataSource {
     @Override
     public long open(DataSpec dataSpec) throws IOException {
         try {
-            Log.d("TAG", "===> step 1");
             smbClient = new SMBClient();
             Connection connection = smbClient.connect(hostName);
-            Log.d("TAG", "===> step 2");
             if ( connection.isConnected() ) {
-                Log.d("TAG", "===> step 3");
                 AuthenticationContext ac = new AuthenticationContext(userName, password.toCharArray(), "WORKGROUP");
-                Log.d("TAG", "===> step 4");
                 Session session = connection.authenticate(ac);
-                Log.d("TAG", "===> step 5");
-
 
                 // Connect to Share
                 DiskShare share = (DiskShare) session.connectShare(shareName);
-                Log.d("TAG", "===> step 6");
                 if ( share.isConnected() ) {
                     Set<SMB2ShareAccess> shareAccess = new HashSet<SMB2ShareAccess>();
                     shareAccess.add(SMB2ShareAccess.ALL.iterator().next()); // READ only
@@ -102,7 +95,6 @@ public final class SmbDataSource extends BaseDataSource {
 
                     // Get the number of bytes that can be read from the opened source
                     long skipped = inputStream.skip(dataSpec.position);
-                    Log.d("TAG", "===> step 10");
                     if (skipped < dataSpec.position) {
                         throw new IOException();
                     }
